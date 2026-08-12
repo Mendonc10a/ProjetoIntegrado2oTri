@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento LDR</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .card { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; width: 300px; }
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 6px; text-align: center; }
+        th { background: #eee; }
+        .escondido { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Monitoramento Sensor</h1>
+    
+    <div id="status">Aguardando medições...</div>
+
+    <div id="dados" class="escondido">
+        <div class="card">
+            <p><b>Valor ADC:</b> <span id="valor"></span></p>
+            <p><b>Classificação IA:</b> <span id="classificacao"></span></p>
+            <p><b>Horário:</b> <span id="horario"></span></p>
+        </div>
+
+        <h2>Histórico</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Valor</th>
+                    <th>Classificação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-historico"></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function atualizar() {
+            try {
+                const res = await fetch("http://localhost:3000/api/dados");
+                if (!res.ok) throw new Error("Erro na rede");
+                const resposta = await res.json();
+
+                if (!resposta.atual) throw new Error("Sem dados");
+
+                document.getElementById("status").classList.add("escondido");
+                document.getElementById("dados").classList.remove("escondido");
+
+                document.getElementById("valor").innerText = resposta.atual.valor;
+                document.getElementById("classificacao").innerText = resposta.atual.classificacao;
+                document.getElementById("horario").innerText = resposta.atual.horario;
+
+                const tbody = document.getElementById("tabela-historico");
+                tbody.innerHTML = "";
+
+                if (resposta.historico) {
+                    resposta.historico.forEach(item => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${item.horario}</td>
+                            <td>${item.valor}</td>
+                            <td>${item.classificacao}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+            } catch (e) {
+                document.getElementById("status").innerText = "Aguardando medições...";
+                document.getElementById("status").classList.remove("escondido");
+                document.getElementById("dados").classList.add("escondido");
+            }
+        }
+
+        atualizar();
+        setInterval(atualizar, 1000);
+    </script>
+</body>
+</html>
