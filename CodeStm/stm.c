@@ -160,8 +160,7 @@ int main(void)
         /* Envia o valor pela USB CDC */
         CDC_Transmit_FS((uint8_t*)sal, strlen(sal));
 
-        /* Aguarda 500 ms */
-        HAL_Delay(500);
+        HAL_Delay(1000);
 
     }
 

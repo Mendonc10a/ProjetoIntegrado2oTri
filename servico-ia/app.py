@@ -4,7 +4,6 @@ from sklearn.tree import DecisionTreeClassifier
 
 app = Flask(__name__)
 
-# 1. Coleta de dados (Faixa de 0 a 4095 do ADC do STM32)
 X = np.array([
     [100], [300], [500], [700], [900], [1100], [1200],       # Escuro
     [1300], [1600], [1900], [2200], [2500], [2800], [3000], # Adequado

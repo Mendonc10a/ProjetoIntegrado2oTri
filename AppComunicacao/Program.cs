@@ -14,16 +14,23 @@ namespace LeitorSerial
 
         static void Main(string[] args)
         {
-            // Substitua 'COM3' pela porta serial em que o STM32 está conectado
-            string portaCOM = "COM8"; 
             int baudRate = 115200;
+
+            // 1. Detecta automaticamente a porta COM
+            string portaCOM = EncontrarPortaSTM32(baudRate);
+
+            if (string.IsNullOrEmpty(portaCOM))
+            {
+                Console.WriteLine("[C# Erro] Nenhuma porta COM ativa foi encontrada. Verifique o cabo da STM32.");
+                return;
+            }
 
             SerialPort serialPort = new SerialPort(portaCOM, baudRate);
 
             try
             {
                 serialPort.Open();
-                Console.WriteLine($"[C# LPR] Conectado na porta {portaCOM} a {baudRate} baud.");
+                Console.WriteLine($"[C# LPR] Conectado com sucesso na porta {portaCOM} a {baudRate} baud.");
                 Console.WriteLine("[C# LPR] Aguardando dados do STM32... (CTRL+C para sair)");
 
                 while (true)
@@ -52,6 +59,57 @@ namespace LeitorSerial
                     serialPort.Close();
                 }
             }
+        }
+
+        /// <summary>
+        /// Varre todas as portas COM disponíveis e retorna a primeira válida.
+        /// </summary>
+        private static string EncontrarPortaSTM32(int baudRate)
+        {
+            string[] portasDisponiveis = SerialPort.GetPortNames();
+
+            if (portasDisponiveis.Length == 0)
+            {
+                return null;
+            }
+
+            Console.WriteLine($"[C# LPR] Portas encontradas: {string.Join(", ", portasDisponiveis)}");
+
+            foreach (string porta in portasDisponiveis)
+            {
+                try
+                {
+                    using (SerialPort testePorta = new SerialPort(porta, baudRate))
+                    {
+                        // Define um tempo limite curto para não travar a busca
+                        testePorta.ReadTimeout = 1500;
+                        testePorta.Open();
+
+                        // Tenta ler uma linha para ver se é a STM32 transmitindo
+                        string leituraTeste = testePorta.ReadLine();
+
+                        if (!string.IsNullOrEmpty(leituraTeste))
+                        {
+                            Console.WriteLine($"[C# LPR] STM32 identificada na porta: {porta}");
+                            return porta;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Se a porta estiver ocupada ou não responder a tempo, ignora e testa a próxima
+                    continue;
+                }
+            }
+
+            // Se nenhuma respondeu a tempo mas existe apenas 1 porta conectada no PC, assume ela por padrão
+            if (portasDisponiveis.Length == 1)
+            {
+                Console.WriteLine($"[C# LPR] Assumindo única porta disponível: {portasDisponiveis[0]}");
+                return portasDisponiveis[0];
+            }
+
+            return null;
         }
 
         private static async Task EnviarParaNodeAsync(double valor)
