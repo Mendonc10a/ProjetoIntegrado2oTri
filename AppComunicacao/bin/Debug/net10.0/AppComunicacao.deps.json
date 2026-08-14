@@ -8,7 +8,8 @@
     ".NETCoreApp,Version=v10.0": {
       "AppComunicacao/1.0.0": {
         "dependencies": {
-          "System.IO.Ports": "10.0.10"
+          "System.IO.Ports": "10.0.10",
+          "System.Management": "10.0.11"
         },
         "runtime": {
           "AppComunicacao.dll": {}
@@ -178,6 +179,14 @@
           }
         }
       },
+      "System.CodeDom/10.0.11": {
+        "runtime": {
+          "lib/net10.0/System.CodeDom.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.1126.37416"
+          }
+        }
+      },
       "System.IO.Ports/10.0.10": {
         "dependencies": {
           "runtime.native.System.IO.Ports": "10.0.10"
@@ -200,6 +209,25 @@
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.10",
             "fileVersion": "10.0.1026.32716"
+          }
+        }
+      },
+      "System.Management/10.0.11": {
+        "dependencies": {
+          "System.CodeDom": "10.0.11"
+        },
+        "runtime": {
+          "lib/net10.0/System.Management.dll": {
+            "assemblyVersion": "10.0.0.11",
+            "fileVersion": "10.0.1126.37416"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.Management.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.11",
+            "fileVersion": "10.0.1126.37416"
           }
         }
       }
@@ -330,12 +358,26 @@
       "path": "runtime.osx-x64.runtime.native.system.io.ports/10.0.10",
       "hashPath": "runtime.osx-x64.runtime.native.system.io.ports.10.0.10.nupkg.sha512"
     },
+    "System.CodeDom/10.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-v40pNeBoZTYsiVxz+PzyZmmIr2JIhpK4VsFpQqZSZCXa51PDlNXIN2ESm8kDU0voZYVfLhxF9HvmBsxCJmkiRg==",
+      "path": "system.codedom/10.0.11",
+      "hashPath": "system.codedom.10.0.11.nupkg.sha512"
+    },
     "System.IO.Ports/10.0.10": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-9lciKeaWzvX3DlgKVvMSE9hM1DeXXTtvE/FIOyNaXn03DrSlC1zZfjALB250MxbClnjMUEp4yfP3rTEegedLUA==",
       "path": "system.io.ports/10.0.10",
       "hashPath": "system.io.ports.10.0.10.nupkg.sha512"
+    },
+    "System.Management/10.0.11": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xyNn8KGbWI88LoUwg3rB8qcpFFST6dr8Ro/qS8GBu2GOwR0v7J82kVFHTiiPtvEKS79VbMTxs/sIKQ+Cq1Zs1g==",
+      "path": "system.management/10.0.11",
+      "hashPath": "system.management.10.0.11.nupkg.sha512"
     }
   }
 }

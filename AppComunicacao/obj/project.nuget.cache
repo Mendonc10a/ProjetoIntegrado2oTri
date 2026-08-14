@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "F2ei/CE4jRs=",
+  "dgSpecHash": "kwDsW2PueqU=",
   "success": true,
   "projectFilePath": "C:\\Users\\SAMSUNG\\Desktop\\ProjInt\\AppComunicacao\\AppComunicacao.csproj",
   "expectedPackageFiles": [
@@ -21,7 +21,9 @@
     "C:\\Users\\SAMSUNG\\.nuget\\packages\\runtime.native.system.io.ports\\10.0.10\\runtime.native.system.io.ports.10.0.10.nupkg.sha512",
     "C:\\Users\\SAMSUNG\\.nuget\\packages\\runtime.osx-arm64.runtime.native.system.io.ports\\10.0.10\\runtime.osx-arm64.runtime.native.system.io.ports.10.0.10.nupkg.sha512",
     "C:\\Users\\SAMSUNG\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\10.0.10\\runtime.osx-x64.runtime.native.system.io.ports.10.0.10.nupkg.sha512",
-    "C:\\Users\\SAMSUNG\\.nuget\\packages\\system.io.ports\\10.0.10\\system.io.ports.10.0.10.nupkg.sha512"
+    "C:\\Users\\SAMSUNG\\.nuget\\packages\\system.codedom\\10.0.11\\system.codedom.10.0.11.nupkg.sha512",
+    "C:\\Users\\SAMSUNG\\.nuget\\packages\\system.io.ports\\10.0.10\\system.io.ports.10.0.10.nupkg.sha512",
+    "C:\\Users\\SAMSUNG\\.nuget\\packages\\system.management\\10.0.11\\system.management.10.0.11.nupkg.sha512"
   ],
   "logs": []
 }

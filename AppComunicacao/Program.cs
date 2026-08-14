@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Management;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -14,111 +15,97 @@ namespace LeitorSerial
 
         static void Main()
         {
-            // 1. Tenta identificar automaticamente a porta COM em que a STM32 está conectada
-            string? portaCOM = EncontrarPortaSTM32(115200);
+            string? portaCOM = DetectarPortaAtivaSTM32();
 
-            // 2. Se nenhuma porta responder, avisa o usuário e encerra o programa
             if (string.IsNullOrEmpty(portaCOM))
             {
-                Console.WriteLine("\n[AVISO] Nenhuma porta COM ativa com o protocolo STM32 foi encontrada!");
-                Console.WriteLine("[AVISO] Verifique se o cabo USB está conectado e tente novamente.\n");
+                Console.WriteLine("\n[ERRO] Nenhuma porta COM ativa do STM32 foi encontrada!\n");
                 return;
             }
 
-            // 3. Inicia a comunicação na porta identificada
+            Console.WriteLine($"\n[C# Serial] Conectando na porta: {portaCOM}...");
+
             using (SerialPort serial = new SerialPort(portaCOM, 115200))
             {
                 try
                 {
+                    serial.DtrEnable = true;
+                    serial.RtsEnable = true;
+                    serial.ReadTimeout = 2000;
+
                     serial.Open();
-                    Console.WriteLine($"\n[C# Serial] Conectado com sucesso em {portaCOM} (Hexadecimal)...");
+                    serial.DiscardInBuffer();
+                    Console.WriteLine($"[C# Serial] Conectado em {portaCOM}! Aguardando leituras (ASCII)...\n");
 
                     while (true)
                     {
-                        // Espera ter pelo menos 4 bytes no buffer
-                        if (serial.BytesToRead >= 4)
+                        try
                         {
-                            // Procura o Byte de Início (0xFF)
-                            if (serial.ReadByte() == 0xFF)
-                            {
-                                byte msb = (byte)serial.ReadByte();      // Parte Alta
-                                byte lsb = (byte)serial.ReadByte();      // Parte Baixa
-                                byte checksum = (byte)serial.ReadByte(); // Soma de validação
+                            // Lê a linha de texto enviada pela STM32 até o '\n'
+                            string linha = serial.ReadLine().Trim();
 
-                                // Valida a integridade do pacote
-                                if ((byte)(msb + lsb) == checksum)
+                            if (!string.IsNullOrEmpty(linha))
+                            {
+                                // Converte o texto recebido (ex: "3796") para número inteiro
+                                if (int.TryParse(linha, out int valorLDR))
                                 {
-                                    int valorLDR = (msb << 8) | lsb;
-                                    Console.WriteLine($"[Hex RX] {msb:X2} {lsb:X2} | Valor LDR: {valorLDR}");
-                                    
+                                    Console.WriteLine($"[C# RX] Valor LDR Recebido: {valorLDR}");
+
+                                    // Envia para o Node.js -> IA -> Front
                                     _ = EnviarParaNodeAsync(valorLDR);
                                 }
                                 else
                                 {
-                                    Console.WriteLine("[Erro] Pacote corrompido (Checksum inválido).");
+                                    Console.WriteLine($"[C# Aviso] Dado recebido não é um número válido: '{linha}'");
                                 }
                             }
                         }
-
-                        Task.Delay(10).Wait();
+                        catch (TimeoutException)
+                        {
+                            // Timeout normal caso a STM32 demore mais de 2s entre envios
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[Erro Serial] Conexão perdida: {ex.Message}");
+                    Console.WriteLine($"[Erro Serial] Falha em {portaCOM}: {ex.Message}");
                 }
             }
         }
 
-        /// <summary>
-        /// Varre todas as portas COM e testa qual delas responde no protocolo correto (0xFF).
-        /// </summary>
-        private static string? EncontrarPortaSTM32(int baudRate)
+        private static string? DetectarPortaAtivaSTM32()
         {
-            string[] portas = SerialPort.GetPortNames();
+            string[] termosBusca = { "STMicroelectronics", "STLink", "ST-Link", "STM", "USB Serial" };
 
-            if (portas.Length == 0)
+            try
             {
-                return null; // Nenhuma porta física encontrada
-            }
-
-            Console.WriteLine($"[Busca] Portas encontradas: {string.Join(", ", portas)}");
-
-            foreach (string porta in portas)
-            {
-                try
+                using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' AND Status = 'OK'"))
+                using (var dispositivos = searcher.Get())
                 {
-                    using (SerialPort teste = new SerialPort(porta, baudRate))
+                    foreach (var device in dispositivos)
                     {
-                        teste.ReadTimeout = 1000; // Tempo limite para resposta
-                        teste.Open();
+                        string nome = device["Caption"]?.ToString() ?? "";
 
-                        // Verifica se há dados chegando na porta
-                        if (teste.BytesToRead >= 4)
+                        foreach (string termo in termosBusca)
                         {
-                            if (teste.ReadByte() == 0xFF)
+                            if (nome.Contains(termo, StringComparison.OrdinalIgnoreCase))
                             {
-                                Console.WriteLine($"[Busca] STM32 identificada na porta: {porta}");
-                                return porta;
+                                int inicio = nome.LastIndexOf("(COM");
+                                int fim = nome.LastIndexOf(")");
+
+                                if (inicio != -1 && fim != -1 && fim > inicio)
+                                {
+                                    return nome.Substring(inicio + 1, fim - inicio - 1);
+                                }
                             }
                         }
                     }
                 }
-                catch
-                {
-                    // Se a porta estiver ocupada por outro programa ou não responder, testa a próxima
-                    continue;
-                }
             }
+            catch { }
 
-            // Se encontrou apenas 1 porta COM no Windows, assume ela por padrão mesmo sem leitura prévia
-            if (portas.Length == 1)
-            {
-                Console.WriteLine($"[Busca] Assumindo a única porta disponível: {portas[0]}");
-                return portas[0];
-            }
-
-            return null;
+            string[] portasSistema = SerialPort.GetPortNames();
+            return portasSistema.Length > 0 ? portasSistema[portasSistema.Length - 1] : null;
         }
 
         private static async Task EnviarParaNodeAsync(int valor)
@@ -129,12 +116,20 @@ namespace LeitorSerial
                 string json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                await httpClient.PostAsync(nodeUrl, content);
-                Console.WriteLine($"[Node.js] Enviado: {valor}");
+                HttpResponseMessage response = await httpClient.PostAsync(nodeUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[C# -> Node.js] Enviado com sucesso: {valor}");
+                }
+                else
+                {
+                    Console.WriteLine($"[C# -> Node.js Erro HTTP] Status: {response.StatusCode}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Erro HTTP] {ex.Message}");
+                Console.WriteLine($"[C# Erro HTTP] Não foi possível conectar ao Node.js: {ex.Message}");
             }
         }
     }

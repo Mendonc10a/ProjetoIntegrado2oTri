@@ -33,3 +33,7 @@ C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\bin\Debug\net10.0\runtimes\unix\
 C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\bin\Debug\net10.0\runtimes\win\lib\net10.0\System.IO.Ports.dll
 C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\obj\Debug\net10.0\AppComunicacao.csproj.AssemblyReference.cache
 C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\obj\Debug\net10.0\AppComun.929AEED1.Up2Date
+C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\obj\Debug\net10.0\AppComunicacao.sourcelink.json
+C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\bin\Debug\net10.0\System.CodeDom.dll
+C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\bin\Debug\net10.0\System.Management.dll
+C:\Users\SAMSUNG\Desktop\ProjInt\AppComunicacao\bin\Debug\net10.0\runtimes\win\lib\net10.0\System.Management.dll
