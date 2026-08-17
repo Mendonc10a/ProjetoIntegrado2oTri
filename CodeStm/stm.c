@@ -126,7 +126,7 @@ int main(void)
 
     uint16_t leitura;
     float sensor;
-    char sal[20];
+    uint8_t bufferEnvio[2];
 
     /* USER CODE END 2 */
 
@@ -154,11 +154,13 @@ int main(void)
             primeiraLeitura = 1;
         }
 
-        /* Converte o valor para texto */
-        sprintf(sal, "%u\n", (uint16_t)sensor);
+    /* Separa o valor numérico em 2 bytes (MSB e LSB) */
+    uint16_t valor = (uint16_t)sensor;
+    bufferEnvio[0] = (uint8_t)((valor >> 8) & 0xFF);
+    bufferEnvio[1] = (uint8_t)(valor & 0xFF);
 
-        /* Envia o valor pela USB CDC */
-        CDC_Transmit_FS((uint8_t*)sal, strlen(sal));
+/* Envia os 2 bytes brutos via USB CDC */
+    CDC_Transmit_FS(bufferEnvio, 2);
 
         HAL_Delay(1000);
 
