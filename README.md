@@ -1,5 +1,5 @@
 # INTEGRANTES:
-Arthur Yuzo Sáber Shida
+Arthur Yuzo Sáber Shida e
 João Gabriel Capistrano Mendonça
 # Turma:
 34DS
