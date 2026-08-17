@@ -35,36 +35,32 @@ namespace LeitorSerial
 
                     serial.Open();
                     serial.DiscardInBuffer();
-                    Console.WriteLine($"[C# Serial] Conectado em {portaCOM}! Aguardando leituras (ASCII)...\n");
+                    Console.WriteLine($"[C# Serial] Conectado em {portaCOM}! Aguardando leituras (Binário)...\n");
 
-                    while (true)
-                    {
-                        try
-                        {
-                            // Lê a linha de texto enviada pela STM32 até o '\n'
-                            string linha = serial.ReadLine().Trim();
+while (true)
+{
+    try
+    {
+        // Aguarda a chegada dos 2 bytes da transmissão
+        if (serial.BytesToRead >= 2)
+        {
+            byte[] buffer = new byte[2];
+            serial.Read(buffer, 0, 2);
 
-                            if (!string.IsNullOrEmpty(linha))
-                            {
-                                // Converte o texto recebido (ex: "3796") para número inteiro
-                                if (int.TryParse(linha, out int valorLDR))
-                                {
-                                    Console.WriteLine($"[C# RX] Valor LDR Recebido: {valorLDR}");
+            // Reconstrução do inteiro de 16 bits (MSB << 8 | LSB)
+            int valorLDR = (buffer[0] << 8) | buffer[1];
 
-                                    // Envia para o Node.js -> IA -> Front
-                                    _ = EnviarParaNodeAsync(valorLDR);
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"[C# Aviso] Dado recebido não é um número válido: '{linha}'");
-                                }
-                            }
-                        }
-                        catch (TimeoutException)
-                        {
-                            // Timeout normal caso a STM32 demore mais de 2s entre envios
-                        }
-                    }
+            Console.WriteLine($"[C# RX] Valor LDR Recebido: {valorLDR}");
+
+            // Envia para o Node.js -> IA -> Front
+            _ = EnviarParaNodeAsync(valorLDR);
+        }
+    }
+    catch (TimeoutException)
+    {
+        // Timeout normal caso a STM32 demore mais de 2s entre envios
+    }
+}
                 }
                 catch (Exception ex)
                 {
